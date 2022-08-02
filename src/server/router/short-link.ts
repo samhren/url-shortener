@@ -30,7 +30,7 @@ function isValidHttpUrl(tempUrl: string) {
 export const urlRouter = createRouter()
     .mutation("create", {
         input: z.object({
-            url: z.string().url(),
+            url: z.string(),
             slug: z.string().optional(),
             userId: z.string(),
         }),
@@ -39,14 +39,31 @@ export const urlRouter = createRouter()
                 input.slug = makeSlug(12);
             }
 
-            if (
-                !isValidHttpUrl(input.url) ||
-                input.slug.includes("/") ||
-                input.slug.includes(" ")
-            ) {
+            if (!isValidHttpUrl(input.url)) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "Invalid URL",
+                });
+            }
+
+            if (input.slug.length < 4) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Slug must be at least 4 characters",
+                });
+            }
+
+            if (input.slug.length > 12) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Slug must be less than 12 characters",
+                });
+            }
+
+            if (input.slug.includes(" ") || input.slug.includes("/")) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Slug cannot contain spaces or slashes",
                 });
             }
 

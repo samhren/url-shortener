@@ -10,7 +10,13 @@ const MyLinksDisplay: React.FC<{ userId: string }> = ({ userId }) => {
     }
 
     if (!data) {
-        return <div>No links</div>;
+        return (
+            <div className="w-screen flex justify-center items-center">
+                <h1 className="mt-[40vh] font-medium text-4xl">
+                    No Links Created
+                </h1>
+            </div>
+        );
     }
 
     const links = data.map((link) => (
