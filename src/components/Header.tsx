@@ -1,5 +1,6 @@
 import React from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
 
 const Header = () => {
     const { data: session, status } = useSession();
@@ -30,7 +31,7 @@ const Header = () => {
     return (
         <div className="flex w-screen bg-slate-400 py-4">
             <h1 className="text-lg my-auto ml-4 font-semibold">
-                Url Shortener
+                <Link href="/">Url Shortener</Link>
             </h1>
             <button
                 onClick={signFunction}

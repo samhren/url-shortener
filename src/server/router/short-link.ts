@@ -15,6 +15,13 @@ function makeSlug(length: number) {
     return result;
 }
 
+function isValidSlug(slug: string) {
+    if (/^[a-zA-Z0-9_-]+$/.test(slug)) {
+        return true;
+    }
+    return false;
+}
+
 function isValidHttpUrl(tempUrl: string) {
     let url;
 
@@ -60,10 +67,11 @@ export const urlRouter = createRouter()
                 });
             }
 
-            if (input.slug.includes(" ") || input.slug.includes("/")) {
+            if (!isValidSlug(input.slug)) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
-                    message: "Slug cannot contain spaces or slashes",
+                    message:
+                        "Slug can only contain letters, numbers, dashes, and underscores",
                 });
             }
 
@@ -77,6 +85,20 @@ export const urlRouter = createRouter()
                 throw new TRPCError({
                     code: "CONFLICT",
                     message: "Slug already exists",
+                });
+            }
+
+            const countUserCreated = await ctx.prisma.shortLink.count({
+                where: {
+                    userId: input.userId,
+                },
+            });
+
+            if (countUserCreated >= 10) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message:
+                        "You have reached the maximum number of short links",
                 });
             }
 
@@ -106,5 +128,19 @@ export const urlRouter = createRouter()
             });
 
             return shortLinks;
+        },
+    })
+    .mutation("delete", {
+        input: z.object({
+            id: z.string(),
+        }),
+        async resolve({ ctx, input }) {
+            const shortLink = await ctx.prisma.shortLink.delete({
+                where: {
+                    id: input.id,
+                },
+            });
+
+            return shortLink;
         },
     });
