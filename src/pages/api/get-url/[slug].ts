@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { prisma } from "../../server/db/client";
+import { prisma } from "../../../server/db/client";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
     const slug = req.query["slug"];
@@ -29,5 +29,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    return res.redirect(data.url);
+    await prisma.shortLink.update({
+        where: {
+            id: data.id,
+        },
+        data: {
+            clicks: data.clicks + 1,
+        },
+    });
+    return res.json(data);
 };
