@@ -83,7 +83,7 @@ const MyLinksDisplay: React.FC<{ userId: string }> = ({ userId }) => {
     );
 };
 
-const myLinks = () => {
+const MyLinks = () => {
     const { data: session, status } = useSession();
     if (status === "loading") {
         return <div>Loading...</div>;
@@ -101,4 +101,4 @@ const myLinks = () => {
     return <MyLinksDisplay userId={session.user.id} />;
 };
 
-export default myLinks;
+export default MyLinks;

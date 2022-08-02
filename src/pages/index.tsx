@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
@@ -87,9 +88,9 @@ const HomeContents = () => {
                 Hello {session.user?.name}
             </div>
             <div className="my-4">
-                <a href="/my-links" className="text-blue-500">
-                    View my links
-                </a>
+                <div className="text-blue-500">
+                    <Link href="/my-links">My Links</Link>
+                </div>
             </div>
 
             <UrlForm userId={session.user?.id} />
