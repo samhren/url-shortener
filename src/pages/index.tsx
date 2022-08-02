@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
@@ -17,41 +18,77 @@ function isValidHttpUrl(tempUrl: string) {
 }
 
 const UrlForm: React.FC<{ userId: string }> = ({ userId }) => {
+    const router = useRouter();
+
     const [url, setUrl] = useState("");
     const [slug, setSlug] = useState("");
+
+    const [urlError, setUrlError] = useState("");
+    const [slugError, setSlugError] = useState("");
+
+    const [success, setSuccess] = useState(false);
 
     const { mutate: createShortUrl } = trpc.useMutation("url.create");
 
     return (
-        <div>
-            <h1>Create a new Short Url</h1>
+        <div className="flex flex-col items-center">
+            <h1 className="text-lg mb-2">Create a new Short Url</h1>
             <input
+                className="w-1/2 mx-auto mb-2"
                 type="text"
                 placeholder="URL"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                    setUrl(e.target.value);
+                }}
             />
+            {urlError && (
+                <div className="text-red-500 text-sm mb-2">{urlError}</div>
+            )}
             <input
+                className="w-1/2 mx-auto mb-2"
                 type="text"
-                placeholder="Slug"
+                placeholder="Slug (optional)"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
             />
+            {slugError && (
+                <div className="text-red-500 text-sm mb-2">{slugError}</div>
+            )}
             <button
                 onClick={() => {
-                    if (!url) return;
-                    if (!slug) return;
-                    if (!isValidHttpUrl(url)) return;
-                    if (slug.includes("/") || slug.includes(" ")) return;
+                    if (!url) {
+                        setUrlError("URL is required");
+                        return;
+                    }
+                    if (!isValidHttpUrl(url)) {
+                        setUrlError("Invalid URL");
+                        return;
+                    }
+                    if (slug.includes("/") || slug.includes(" ")) {
+                        setSlugError("Slug cannot contain spaces or /");
+                        return;
+                    }
 
                     createShortUrl({ userId, url, slug });
 
                     setUrl("");
                     setSlug("");
+
+                    setUrlError("");
+                    setSlugError("");
+
+                    setSuccess(true);
                 }}
+                className="w-fit bg-white hover:bg-gray-100 text-gray-800 font-mnedium py-2 px-4 border rounded shadow my-2"
             >
                 Create!
             </button>
+            {success && (
+                <div className="text-green-500 text-sm mb-2">
+                    Successfully created short url!
+                </div>
+            )}
         </div>
     );
 };
@@ -65,20 +102,26 @@ const HomeContents = () => {
 
     if (!session || !session.user?.id) {
         return (
-            <div>
-                <div>Please log in</div>
-                <button onClick={() => signIn("github")}>
-                    Sign in with Github
-                </button>
+            <div className="w-screen flex justify-center items-center">
+                <h1 className="mt-[40vh] font-medium text-4xl">
+                    Not logged in
+                </h1>
             </div>
         );
     }
 
     return (
-        <div>
-            <div>Hello {session.user?.name}</div>
+        <div className="w-screen text-center">
+            <div className="mt-6 font-semibold text-2xl">
+                Hello {session.user?.name} 👋
+            </div>
+            <div className="my-4">
+                <a href="/my-links" className="text-blue-500">
+                    View my links
+                </a>
+            </div>
+
             <UrlForm userId={session.user?.id} />
-            <button onClick={() => signOut()}>Sign out</button>
         </div>
     );
 };

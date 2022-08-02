@@ -50,6 +50,19 @@ export const urlRouter = createRouter()
                 });
             }
 
+            const slugDuplicate = await ctx.prisma.shortLink.findFirst({
+                where: {
+                    slug: input.slug,
+                },
+            });
+
+            if (slugDuplicate) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Slug already exists",
+                });
+            }
+
             const shortLink = await ctx.prisma.shortLink.create({
                 data: {
                     url: input.url,
